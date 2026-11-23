@@ -4,6 +4,7 @@ from dataclasses import replace
 from unittest.mock import AsyncMock
 
 from aionatureremo import Appliance, NatureRemoAuthError, NatureRemoConnectionError
+import pytest
 from pytest_homeassistant.common import MockConfigEntry
 
 from homeassistant.components.nature_remo.const import DOMAIN
@@ -46,31 +47,47 @@ async def test_energy_only_hub_is_registered(
     assert (dr.CONNECTION_NETWORK_MAC, "ab:cd:ef:12:34:59") in hub.connections
 
 
+@pytest.mark.parametrize(
+    ("appliance_id", "hub_id"),
+    [
+        pytest.param("appliance-meter-1", "device-remoe-1", id="smart_meter"),
+        pytest.param("appliance-ac-1", "device-remo3-1", id="air_conditioner"),
+    ],
+)
 async def test_appliance_links_to_its_hub(
     hass: HomeAssistant,
     init_integration: MockConfigEntry,
     device_registry: dr.DeviceRegistry,
+    appliance_id: str,
+    hub_id: str,
 ) -> None:
-    """The smart meter points at its parent hub via via_device.
+    """An appliance points at its parent hub via via_device.
 
-    It must be linked to the Remo E lite rather than orphaned at the top
-    level, regardless of platform setup ordering. Appliances this platform
-    exposes no entities for are not registered at all, so a fresh install
-    shows no empty devices.
+    It must be linked to its Remo rather than orphaned at the top level,
+    regardless of platform setup ordering.
     """
     hub = device_registry.async_get_device_by_identifier(
-        (DOMAIN, "device-remoe-1"), init_integration.entry_id
+        (DOMAIN, hub_id), init_integration.entry_id
     )
-    meter = device_registry.async_get_device_by_identifier(
-        (DOMAIN, "appliance-meter-1"), init_integration.entry_id
+    appliance = device_registry.async_get_device_by_identifier(
+        (DOMAIN, appliance_id), init_integration.entry_id
     )
     assert hub is not None
-    assert meter is not None
-    assert meter.via_device_id == hub.id
+    assert appliance is not None
+    assert appliance.via_device_id == hub.id
 
+
+@pytest.mark.parametrize("appliance_id", ["appliance-tv-1", "appliance-floorheater-1"])
+async def test_appliance_without_entities_is_not_registered(
+    hass: HomeAssistant,
+    init_integration: MockConfigEntry,
+    device_registry: dr.DeviceRegistry,
+    appliance_id: str,
+) -> None:
+    """An appliance no platform exposes leaves no empty device behind."""
     assert (
         device_registry.async_get_device_by_identifier(
-            (DOMAIN, "appliance-ac-1"), init_integration.entry_id
+            (DOMAIN, appliance_id), init_integration.entry_id
         )
         is None
     )

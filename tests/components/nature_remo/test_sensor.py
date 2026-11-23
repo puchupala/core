@@ -20,12 +20,18 @@ from pytest_homeassistant.common import (
 from syrupy.assertion import SnapshotAssertion
 
 from homeassistant.components.nature_remo.const import DOMAIN, UPDATE_INTERVAL
-from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN
+from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.util import dt as dt_util
 
 from . import async_poll
+
+
+@pytest.fixture
+def platforms() -> list[Platform]:
+    """Platforms to set up."""
+    return [Platform.SENSOR]
 
 
 async def test_all_entities(

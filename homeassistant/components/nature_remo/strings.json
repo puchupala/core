@@ -21,6 +21,29 @@
     }
   },
   "entity": {
+    "climate": {
+      "air_conditioner": {
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "[%key:common::state::auto%]"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "auto": "[%key:common::state::auto%]",
+              "swing": "Swing"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "auto": "[%key:common::state::auto%]",
+              "swing": "[%key:component::nature_remo::entity::climate::air_conditioner::state_attributes::swing_horizontal_mode::state::swing%]"
+            }
+          }
+        }
+      }
+    },
     "sensor": {
       "cumulative_energy_normal": {
         "name": "Imported energy"
@@ -39,6 +62,12 @@
   "exceptions": {
     "auth_failed": {
       "message": "Access token is invalid or was revoked"
+    },
+    "command_failed": {
+      "message": "Error sending the command to the Nature API"
+    },
+    "command_rate_limited": {
+      "message": "Nature API rate limit exceeded; try again in a few minutes"
     },
     "update_failed": {
       "message": "Error communicating with the Nature API: {error}"

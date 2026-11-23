@@ -1,0 +1,13 @@
+{
+  "temp": "20",
+  "temp_unit": "c",
+  "mode": "warm",
+  "vol": "2",
+  "dir": "auto",
+  "dirh": "",
+  "button": "",
+  "updated_at": "2026-07-18T08:00:00Z",
+  "extra": {
+    "autoclean": "on"
+  }
+}

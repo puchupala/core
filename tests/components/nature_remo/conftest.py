@@ -5,12 +5,24 @@ from __future__ import annotations
 from collections.abc import Generator
 from unittest.mock import AsyncMock, patch
 
-from aionatureremo import Appliance, Device, NatureRemoClient, RateLimit, User
+from aionatureremo import (
+    AirconSettings,
+    Appliance,
+    Device,
+    NatureRemoClient,
+    RateLimit,
+    User,
+)
 import pytest
-from pytest_homeassistant.common import MockConfigEntry, load_json_array_fixture
+from pytest_homeassistant.common import (
+    MockConfigEntry,
+    load_json_array_fixture,
+    load_json_object_fixture,
+)
 
+from homeassistant.components.nature_remo import PLATFORMS
 from homeassistant.components.nature_remo.const import DOMAIN
-from homeassistant.const import CONF_API_TOKEN
+from homeassistant.const import CONF_API_TOKEN, Platform
 from homeassistant.core import HomeAssistant
 
 
@@ -48,6 +60,9 @@ def mock_client(
     client.get_user.return_value = User(id="user-1", nickname="Alice")
     client.get_devices.return_value = devices
     client.get_appliances.return_value = appliances
+    client.set_aircon_settings.return_value = AirconSettings.from_dict(
+        load_json_object_fixture("aircon_settings.json", DOMAIN)
+    )
     client.rate_limit = RateLimit(limit=30, remaining=25, reset=1752825600)
     with (
         patch(
@@ -73,13 +88,21 @@ def mock_config_entry() -> MockConfigEntry:
 
 
 @pytest.fixture
+def platforms() -> list[Platform]:
+    """Platforms to set up."""
+    return PLATFORMS
+
+
+@pytest.fixture
 async def init_integration(
     hass: HomeAssistant,
     mock_config_entry: MockConfigEntry,
     mock_client: AsyncMock,
+    platforms: list[Platform],
 ) -> MockConfigEntry:
     """Set up the integration with the mocked client."""
     mock_config_entry.add_to_hass(hass)
-    await hass.config_entries.async_setup(mock_config_entry.entry_id)
-    await hass.async_block_till_done()
+    with patch("homeassistant.components.nature_remo.PLATFORMS", platforms):
+        await hass.config_entries.async_setup(mock_config_entry.entry_id)
+        await hass.async_block_till_done()
     return mock_config_entry

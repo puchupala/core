@@ -4,5 +4,7 @@ from datetime import timedelta
 
 DOMAIN = "nature_remo"
 
+BUTTON_POWER_OFF = "power-off"
+
 # 2 requests per cycle out of the account-wide 30 req / 5 min budget.
 UPDATE_INTERVAL = timedelta(seconds=60)
